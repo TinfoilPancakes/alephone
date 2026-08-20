@@ -371,14 +371,14 @@ static void get_player_transfer_mode(short player_index, short *transfer_mode, s
 static void set_player_dead_shape(short player_index, bool dying);
 static void remove_dead_player_items(short player_index);
 static void update_player_teleport(short player_index);
-static void handle_player_in_vacuum(short player_index, uint32 action_flags);
+static void handle_player_in_vacuum(short player_index, uint64_t action_flags);
 static void update_player_media(short player_index);
 static short calculate_player_team(short base_team);
 
 static void try_and_strip_player_items(short player_index);
 
 // LP additions:
-static void ReplenishPlayerOxygen(short player_index, uint32 action_flags);
+static void ReplenishPlayerOxygen(short player_index, uint64_t action_flags);
 
 // From AlexJLS patch; monster data necessary so that player as monster can be activated
 // to make guided missiles work
@@ -652,9 +652,9 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 	
 	for (player_index= 0, player= players; player_index<dynamic_world->player_count; ++player_index, ++player)
 	{
-		uint32 action_flags = inActionQueuesToUse->dequeueActionFlags(player_index);
+		uint64_t action_flags = inActionQueuesToUse->dequeueActionFlags(player_index);
 
-		if (action_flags == 0xffffffff)
+		if (action_flags == 0xffffffffffffffff)
 		{
 			// net dead
 			if(!player->netdead && !inPredictive)
@@ -1230,7 +1230,7 @@ bool try_and_subtract_player_item(
 // LP change: assumes nonpositive change rate
 static void handle_player_in_vacuum(
 	short player_index,
-	uint32 action_flags)
+	uint64_t action_flags)
 {
 	struct player_data *player= get_player_data(player_index);
 
@@ -1297,7 +1297,7 @@ static void handle_player_in_vacuum(
 }
 
 // LP: assumes nonnegative change rate
-static void ReplenishPlayerOxygen(short player_index, uint32 action_flags)
+static void ReplenishPlayerOxygen(short player_index, uint64_t action_flags)
 {
 	(void)(action_flags);
 	

@@ -62,14 +62,14 @@ typedef L_Class<Lua_Action_Flags_Name> Lua_Action_Flags;
 
 extern ModifiableActionQueues *GetGameQueue();
 
-template<uint32 flag> 
+template<uint64_t flag>
 static int Lua_Action_Flags_Get_t(lua_State *L)
 {
 	int player_index = Lua_Action_Flags::Index(L, 1);
 
 	if (GetGameQueue()->countActionFlags(player_index))
 	{
-		uint32 flags = GetGameQueue()->peekActionFlags(player_index, 0);
+		uint64_t flags = GetGameQueue()->peekActionFlags(player_index, 0);
 		lua_pushboolean(L, flags & flag);
 	}
 	else

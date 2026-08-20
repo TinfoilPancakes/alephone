@@ -52,9 +52,9 @@ public:
     void		reset();
     void		resetQueue(int inPlayerIndex);
 
-    void		enqueueActionFlags(int inPlayerIndex, const uint32* inFlags, int inFlagsCount);
-    uint32		dequeueActionFlags(int inPlayerIndex);
-    uint32		peekActionFlags(int inPlayerIndex, size_t inElementsFromHead);
+    void		enqueueActionFlags(int inPlayerIndex, const uint64_t* inFlags, int inFlagsCount);
+    uint64_t		dequeueActionFlags(int inPlayerIndex);
+    uint64_t		peekActionFlags(int inPlayerIndex, size_t inElementsFromHead);
     unsigned int	countActionFlags(int inPlayerIndex);
     unsigned int	totalCapacity(int inPlayerIndex) { return mQueueSize - 1; }
     unsigned int	availableCapacity(int inPlayerIndex) { return totalCapacity(inPlayerIndex) - countActionFlags(inPlayerIndex); }
@@ -67,13 +67,13 @@ protected:
     struct action_queue {
 	    unsigned int read_index, write_index;
 
-	    uint32 *buffer;
+	    uint64_t *buffer;
     };
 
     unsigned int	mNumPlayers;
     unsigned int	mQueueSize;
     action_queue*	mQueueHeaders;
-    uint32*		mFlagsBuffer;
+    Uint64*		mFlagsBuffer;
     bool		mZombiesControllable;
 
 // Hide these until they have valid implementation
@@ -87,7 +87,7 @@ public:
 	ModifiableActionQueues(unsigned int inNumPlayers, unsigned int inQueueSize, bool inZombiesControllable) : ActionQueues(inNumPlayers, inQueueSize, inZombiesControllable) { }
 
 	// modifies action flags at the head of the queue
-	void modifyActionFlags(int inPlayerIndex, uint32 inFlags, uint32 inFlagsMask);
+	void modifyActionFlags(int inPlayerIndex, uint64_t inFlags, uint64_t inFlagsMask);
 };
 
 #endif // ACTIONQUEUES_H

@@ -272,6 +272,7 @@ static bool should_switch_to_weapon(short player_index, short new_weapon);
 /*static*/ bool ready_weapon(short player_index, short weapon_index);
 struct weapon_definition *get_current_weapon_definition(short player_index);
 static bool reload_weapon(short player_index, short which_trigger);
+static bool reload_weapon_ex(short player_index, short which_trigger);
 static struct trigger_definition *get_player_trigger_definition(short player_index,
 	short which_trigger);
 static bool handle_trigger_down(short player_index, short which_trigger);
@@ -289,8 +290,9 @@ static bool player_weapon_has_ammo(short player_index, short weapon_index);
 static void lower_weapon(short player_index, short weapon_index);
 static void raise_weapon(short player_index, short weapon_index);
 static bool check_reload(short player_index, short which_trigger);
+static bool check_reload_ex(short player_index, short which_trigger);
 static short get_active_trigger_count_and_states(short player_index,
-	short weapon_index, uint32 action_flags, short *first_trigger, bool *triggers_down);
+	short weapon_index, uint64_t action_flags, short *first_trigger, bool *triggers_down);
 static bool dual_function_secondary_has_control(short player_index);
 static void calculate_ticks_from_shapes(void);
 static void update_sequence(short player_index, short which_trigger);
@@ -300,7 +302,7 @@ static bool get_weapon_data_type_for_count(short player_index, short count, shor
 static void update_player_ammo_count(short player_index);
 /*static*/ bool player_has_valid_weapon(short player_index);
 static void idle_weapon(short player_index);
-static void test_raise_double_weapon(short player_index, uint32 *action_flags);
+static void test_raise_double_weapon(short player_index, uint64_t *action_flags);
 static void modify_position_for_two_weapons(short player_index, short count, _fixed *width, _fixed *height);
 static void change_to_desired_weapon(short player_index);
 static void destroy_current_weapon(short player_index);
@@ -625,7 +627,7 @@ void process_new_item_for_reloading(
 /* Update the given player's weapons */
 void update_player_weapons(
 	short player_index, 
-	uint32 action_flags)
+	uint64_t action_flags)
 {
 	update_shell_casings(player_index);
 	
@@ -696,10 +698,14 @@ void update_player_weapons(
 			} else {
 				trigger->ticks_firing= 0;
 			}
+            
+            if (action_flags & _reload) {
+                check_reload_ex(player_index, which_trigger);
+            }
 
 			/* If we had a state change.. */
 			if(trigger->phase<=0)
-			{
+            {
 				switch(trigger->state)
 				{
 					case _weapon_waiting_to_load:
@@ -918,6 +924,7 @@ void update_player_weapons(
 						break;
 				}
 			}
+            // END HUGE
 		}
 	}
 	
@@ -2133,6 +2140,69 @@ static bool reload_weapon(
 	return can_reload;
 }
 
+static bool reload_weapon_ex(
+     short player_index,
+     short which_trigger)
+{
+    struct trigger_data *trigger= get_player_trigger_data(player_index, which_trigger);
+    struct trigger_definition *trigger_definition= get_player_trigger_definition(player_index, which_trigger);
+    struct player_data *player= get_player_data(player_index);
+    struct weapon_definition *definition= get_current_weapon_definition(player_index);
+    bool can_reload;
+    
+    // LP change: bugging out if these cannot be done
+    if (!(trigger->state==_weapon_idle)) return false;
+    if (!(trigger_definition->ammunition_type==NONE || (trigger_definition->ammunition_type>=0 && trigger_definition->ammunition_type<NUMBER_OF_ITEMS))) return false;
+    if(trigger_definition->ammunition_type != NONE && player->items[trigger_definition->ammunition_type]>0)
+    {
+        struct weapon_data *weapon= get_player_current_weapon(player_index);
+    
+        /* If this is a twofisted weapon & it doesn't reload in one hand... */
+        /* If it is a twofisted weapon, doesn't reload in one hand, and both weapons are valid */
+        if(definition->weapon_class==_twofisted_pistol_class &&
+            !(definition->flags & _weapon_reloads_in_one_hand)
+            && PRIMARY_WEAPON_IS_VALID(weapon) && SECONDARY_WEAPON_IS_VALID(weapon))
+        {
+            struct trigger_data *other_trigger= get_player_trigger_data(player_index, !which_trigger);
+                
+            /* Note the presence of two weapons trying to reload simultaneously.. */
+            if(other_trigger->state==_weapon_waiting_for_other_idle_to_reload)
+            {
+                /* He already had priority. */
+                trigger->state= _weapon_lowering_for_twofisted_reload;
+                trigger->phase= definition->ready_ticks;
+                other_trigger->state= _weapon_awaiting_twofisted_reload;
+                other_trigger->phase= definition->ready_ticks;
+            } else {
+                /* Try as we go through the loop next time.. */
+                trigger->state= _weapon_waiting_for_other_idle_to_reload;
+                trigger->phase= 0;
+            }
+        } else {
+            /* Don't go to a state that has a zero duration.. */
+            if(definition->await_reload_ticks)
+            {
+                trigger->state= _weapon_awaiting_reload;
+                trigger->phase= definition->await_reload_ticks; // should this be by trigger?
+            } else {
+                trigger->state= _weapon_waiting_to_load;
+                trigger->phase= definition->loading_ticks; // should this be by trigger?
+            }
+        }
+        trigger->sequence= 0; // Reset this here, because it won't get reset otherwise.
+        can_reload= true;
+    } else {
+        /* If this weapon needs to dissappear */
+        if(definition->flags & _weapon_disappears_after_use)
+        {
+            destroy_current_weapon(player_index);
+        }
+        can_reload= false;
+    }
+    
+    return can_reload;
+ }
+
 static void destroy_current_weapon(
 	short player_index)
 {
@@ -2304,6 +2374,145 @@ static bool check_reload(
 		}
 	}
 
+	return reloaded_weapon;
+}
+
+static bool check_reload_ex(
+	short player_index,
+	short which_trigger)
+{
+	struct trigger_data *trigger= get_player_trigger_data(player_index, which_trigger);
+	struct weapon_definition *definition= 
+		get_current_weapon_definition(player_index);
+	bool reloaded_weapon= false;
+
+	/* Check to see if the weapon is empty.. */
+	// if(!trigger->rounds_loaded)
+    if (trigger->rounds_loaded == definition->weapons_by_trigger[which_trigger].rounds_per_magazine)
+        return false;
+	
+    switch(definition->weapon_class)
+    {
+        case _melee_class:
+            /* Always have a round loaded.. */
+            trigger->rounds_loaded= 1;
+            break;
+            
+        case _dual_function_class:
+            if(definition->flags & _weapon_triggers_share_ammo)
+            {
+                which_trigger= _primary_weapon;
+            }
+            /* Fallthrough */
+        case _normal_class:
+            /* Hmmm.. we are out of ammunition */
+            if(!reload_weapon_ex(player_index, which_trigger))
+            {
+                /* Switch to the next weapon.. */
+                select_next_best_weapon(player_index);
+            } else {
+                reloaded_weapon= true;
+            }
+            break;
+
+        case _twofisted_pistol_class:
+            {
+                struct weapon_data *weapon= get_player_current_weapon(player_index);
+
+                if(PRIMARY_WEAPON_IS_VALID(weapon) && SECONDARY_WEAPON_IS_VALID(weapon))
+                {
+                    if(!reload_weapon_ex(player_index, which_trigger))
+                    {
+                        /* Okay, we couldn't reload one of them.  */
+                        /* Does the other one have ammo? */
+                        struct trigger_data *other_trigger_data=
+                            get_player_trigger_data(player_index, !which_trigger);
+
+                        if(!other_trigger_data->rounds_loaded)
+                        {
+                            /* We have to change... */
+                            select_next_best_weapon(player_index);
+                        } else {
+                            if(which_trigger==_primary_weapon)
+                            {
+                                /* •• Problems? */
+                                struct trigger_data *other_trigger=
+                                    get_player_trigger_data(player_index, !which_trigger);
+                                    
+                                trigger->state= _weapon_lowering;
+                                trigger->phase= definition->ready_ticks-1;
+                                trigger->sequence= 0;
+                                
+                                other_trigger->state= _weapon_sliding_over_from_second_position;
+                                other_trigger->phase= definition->ready_ticks;
+                                other_trigger->sequence= 0;
+                            } else {
+                                struct trigger_data *other_trigger=
+                                    get_player_trigger_data(player_index, !which_trigger);
+
+                                assert(which_trigger==_secondary_weapon);
+                                trigger->state= _weapon_lowering;
+                                trigger->phase= definition->ready_ticks;
+                                trigger->sequence= 0;
+                                
+                                other_trigger->state= _weapon_sliding_over_from_second_position;
+                                other_trigger->phase= definition->ready_ticks;
+                                other_trigger->sequence= 0;
+                            }
+                        }
+                    } else {
+                        reloaded_weapon= true;
+                    }
+                } else {
+                    /* Hmmm.. we are out of ammunition */
+                    if(reload_weapon_ex(player_index, which_trigger))
+                    {
+                        reloaded_weapon= true;
+                    }
+                }
+            }
+            break;
+
+        case _multipurpose_class:
+            /* Only switch if both of them are out of ammo, and we can't reload the one we */
+            /*  just fired with. */
+            if(!reload_weapon_ex(player_index, which_trigger))
+            {
+                short other_trigger= !which_trigger;
+                struct trigger_data *other_trigger_data;
+                    
+                /* check to see if the other one is empty. */
+                other_trigger_data= get_player_trigger_data(
+                    player_index, other_trigger);
+                    
+                if(!other_trigger_data->rounds_loaded)
+                {
+                    switch(other_trigger_data->state)
+                    {
+                        case _weapon_awaiting_reload:
+                        case _weapon_waiting_to_load:
+                        case _weapon_finishing_reload:
+                            /* Don't switch, because the other is empty now, but not for long.. */
+                            break;
+                            
+                        default:
+            //dprintf("Unable to reload ar & other out of ammo (Which: %d)", which_trigger);
+                            /* Switch to the next weapon.. */
+                            select_next_best_weapon(player_index);
+                            break;
+                    }
+                }
+            } else {
+                reloaded_weapon= true;
+            }
+            break;
+        
+        // LP change: no weapon
+        case NONE:
+        default:
+            break;
+    }
+	
 	return reloaded_weapon;
 }
 
@@ -2956,7 +3165,7 @@ static void play_weapon_sound(
 static short get_active_trigger_count_and_states(
 	short player_index,
 	short weapon_index,
-	uint32 action_flags,
+	uint64_t action_flags,
 	short *first_trigger,
 	bool *triggers_down)
 {
@@ -3766,7 +3975,7 @@ static void idle_weapon(
 /* We are requesting to raise the second pistol for a twofisted class... */
 static void test_raise_double_weapon(
 	short player_index,
-	uint32 *action_flags)
+	uint64_t *action_flags)
 {
 	struct weapon_definition *definition= get_current_weapon_definition(player_index);
 	struct player_data *player= get_player_data(player_index);

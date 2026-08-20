@@ -102,7 +102,7 @@ void initialize_player_terminal_info(short player_index);
 void enter_computer_interface(short player_index, short text_number, short completion_flag);
 void _render_computer_interface(void);
 void update_player_for_terminal_mode(short player_index);
-void update_player_keys_for_terminal(short player_index, uint32 action_flags);
+void update_player_keys_for_terminal(short player_index, uint64_t action_flags);
 uint32 build_terminal_action_flags(char *keymap);
 void dirty_terminal_view(short player_index);
 void abort_terminal_mode(short player_index);

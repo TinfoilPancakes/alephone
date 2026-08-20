@@ -173,6 +173,23 @@ AIStream& AIStreamBE::operator>>(int32 &value)
 	return *this;
 }
 
+AIStream& AIStreamBE::operator>>(uint64_t &value)
+{
+    if(bound_check(8)){
+        uint64_t b0 = uint64_t(*(_M_stream_pos++));
+        uint64_t b1 = uint64_t(*(_M_stream_pos++));
+        uint64_t b2 = uint64_t(*(_M_stream_pos++));
+        uint64_t b3 = uint64_t(*(_M_stream_pos++));
+        uint64_t b4 = uint64_t(*(_M_stream_pos++));
+        uint64_t b5 = uint64_t(*(_M_stream_pos++));
+        uint64_t b6 = uint64_t(*(_M_stream_pos++));
+        uint64_t b7 = uint64_t(*(_M_stream_pos++));
+        
+        value = (b0 << 56) | (b1 << 48) | (b2 << 40) | (b3 << 32) | (b4 << 24) | (b5 << 16) | (b6 << 8) | b7;
+    }
+    return *this;
+}
+
 AOStream& AOStreamBE::operator<<(uint16 value)
 {
 	if(bound_check(2))
@@ -203,6 +220,22 @@ AOStream& AOStreamBE::operator<<(uint32 value)
 AOStream& AOStreamBE::operator<<(int32 value)
 {
 	return operator<<(uint32(value));
+}
+
+AOStream& AOStreamBE::operator<<(uint64_t value)
+{
+    if(bound_check(8))
+    {
+        *(_M_stream_pos++) = uint8(value >> 56);
+        *(_M_stream_pos++) = uint8(value >> 48);
+        *(_M_stream_pos++) = uint8(value >> 40);
+        *(_M_stream_pos++) = uint8(value >> 32);
+        *(_M_stream_pos++) = uint8(value >> 24);
+        *(_M_stream_pos++) = uint8(value >> 16);
+        *(_M_stream_pos++) = uint8(value >> 8);
+        *(_M_stream_pos++) = uint8(value);
+    }
+    return *this;
 }
 
 
@@ -254,6 +287,22 @@ AIStream& AIStreamLE::operator>>(int32 &value)
 	return *this;
 }
 
+AIStream& AIStreamLE::operator>>(uint64_t &value){
+    if(bound_check(8)){
+        uint64_t b0 = uint64_t(*(_M_stream_pos++));
+        uint64_t b1 = uint64_t(*(_M_stream_pos++));
+        uint64_t b2 = uint64_t(*(_M_stream_pos++));
+        uint64_t b3 = uint64_t(*(_M_stream_pos++));
+        uint64_t b4 = uint64_t(*(_M_stream_pos++));
+        uint64_t b5 = uint64_t(*(_M_stream_pos++));
+        uint64_t b6 = uint64_t(*(_M_stream_pos++));
+        uint64_t b7 = uint64_t(*(_M_stream_pos++));
+        
+        value = (b7 << 56) | (b6 << 48) | (b5 << 40) | (b4 << 32) | (b3 << 24) | (b2 << 16) | (b1 << 8) | b0;
+    }
+    return *this;
+}
+
 AOStream& AOStreamLE::operator<<(uint16 value)
 {
 	if(bound_check(2))
@@ -284,6 +333,22 @@ AOStream& AOStreamLE::operator<<(uint32 value)
 AOStream& AOStreamLE::operator<<(int32 value)
 {
 	return operator<<(uint32(value));
+}
+
+AOStream& AOStreamLE::operator<<(uint64_t value)
+{
+    if(bound_check(8))
+    {
+        *(_M_stream_pos++) = uint8(value);
+        *(_M_stream_pos++) = uint8(value >> 8);
+        *(_M_stream_pos++) = uint8(value >> 16);
+        *(_M_stream_pos++) = uint8(value >> 24);
+        *(_M_stream_pos++) = uint8(value >> 32);
+        *(_M_stream_pos++) = uint8(value >> 40);
+        *(_M_stream_pos++) = uint8(value >> 48);
+        *(_M_stream_pos++) = uint8(value >> 56);
+    }
+    return *this;
 }
 
 template<typename T>

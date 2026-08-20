@@ -371,7 +371,7 @@ int32 get_heartbeat_count(void);
 float get_heartbeat_fraction(void);
 void wait_until_next_frame(void);
 void sync_heartbeat_count(void);
-void process_action_flags(short player_identifier, const uint32 *action_flags, short count);
+void process_action_flags(short player_identifier, const uint64_t *action_flags, short count);
 void rewind_recording(void);
 void stop_recording(void);
 void stop_replay(void);
@@ -382,7 +382,7 @@ void increment_replay_speed(void);
 void decrement_replay_speed(void);
 void set_replay_speed(short);
 void reset_recording_and_playback_queues(void);
-uint32 parse_keymap(void);
+uint64_t parse_keymap(void);
 
 /* ---------- prototypes/GAME_DIALOGS.C */
 

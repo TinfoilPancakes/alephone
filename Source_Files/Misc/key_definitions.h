@@ -56,7 +56,7 @@ struct special_flag_data
 struct key_definition
 {
 	SDL_Scancode offset;
-	uint32 action_flag;
+	uint64_t action_flag;
 };
 
 /*
@@ -108,7 +108,10 @@ static struct key_definition standard_key_definitions[]=
 	{SDL_SCANCODE_M, _toggle_map},
 	
 	/* ` for using the microphone */
-	{SDL_SCANCODE_GRAVE, _microphone_button}
+	{SDL_SCANCODE_GRAVE, _microphone_button},
+    
+    /* reload button */
+    {SDL_SCANCODE_X, _reload},
 };
 
 #endif

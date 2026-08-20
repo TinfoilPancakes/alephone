@@ -1642,12 +1642,12 @@ int L_Player_Control(lua_State *L)
  // so it will be easier to change if necessary
  // LP: changed to reallocate-on-expand code;
  // "static" values are remembered from one call to the next
-	static uint32 *action_flags = NULL;
+	static uint64_t *action_flags = NULL;
 	static int prev_value = 0;
 	if (value > prev_value)
 	{
 		if (action_flags) delete []action_flags;
-		action_flags = new uint32[value];
+		action_flags = new uint64_t[value];
 	}
 	assert(action_flags);
 	prev_value = value;

@@ -151,7 +151,7 @@ static void read_recording_queue_chunks(void);
 static short pull_flags_from_recording(short count);
 // LP modifications for object-oriented file handling; returns a test for end-of-file
 static bool vblFSRead(OpenedFile& File, int32 *count, void *dest, bool& HitEOF);
-static void record_action_flags(short player_identifier, const uint32 *action_flags, short count);
+static void record_action_flags(short player_identifier, const uint64_t *action_flags, short count);
 static short get_recording_queue_size(short which_queue);
 
 static uint8 *unpack_recording_header(uint8 *Stream, recording_header *Objects, size_t Count);
@@ -196,7 +196,7 @@ void initialize_keyboard_controller(
 	{
 		queue= get_player_recording_queue(player_index);
 		queue->read_index= queue->write_index = 0;
-		queue->buffer= new uint32[MAXIMUM_QUEUE_SIZE];
+		queue->buffer= new uint64_t[MAXIMUM_QUEUE_SIZE];
 	}
 	enter_mouse(0);
 }
@@ -334,7 +334,7 @@ bool input_controller(
 			}
 			else // then getting input from the keyboard/mouse
 			{
-				uint32 action_flags= parse_keymap();
+				uint64_t action_flags= parse_keymap();
 				
 				process_action_flags(local_player_index, &action_flags, 1);
 				heartbeat_count++; // ba-doom
@@ -349,7 +349,7 @@ bool input_controller(
 
 void process_action_flags(
 	short player_identifier, 
-	const uint32 *action_flags, 
+	const uint64_t *action_flags,
 	short count)
 {
 	if (replay.game_is_being_recorded)
@@ -362,7 +362,7 @@ void process_action_flags(
 
 static void record_action_flags(
 	short player_identifier, 
-	const uint32 *action_flags, 
+	const uint64_t *action_flags,
 	short count)
 {
 	short index;
@@ -387,6 +387,7 @@ static void record_action_flags(
  * Purpose:  saves one chunk of the queue to the recording file, using run-length encoding.
  *
  *********************************************************************************************/
+//TODO: Adjust newer recordings to allow for manual reload
 void save_recording_queue_chunk(
 	short player_index)
 {
@@ -415,6 +416,7 @@ void save_recording_queue_chunk(
 	run_count= num_flags_saved= 0;
 	for (i = 0; i<max_flags; i++)
 	{
+        // Will not store reload flag
 		flag = queue->buffer[queue->read_index];
 		INCREMENT_QUEUE_COUNTER(queue->read_index);
 		
@@ -845,7 +847,7 @@ static void read_recording_queue_chunks(
 	logContext("reading recording queue chunks");
 
 	int32 i, sizeof_read;
-	uint32 action_flags; 
+	uint32 action_flags;
 	int16 count, player_index, num_flags;
 	ActionQueue *queue;
 	
@@ -1226,9 +1228,9 @@ void encode_hotkey_sequence(int hotkey)
 
 uint32_t last_input_update;
 
-uint32 parse_keymap(void)
+uint64_t parse_keymap(void)
 {
-  uint32 flags = 0;
+  uint64_t flags = 0;
 
   if(get_keyboard_controller_status())
     {

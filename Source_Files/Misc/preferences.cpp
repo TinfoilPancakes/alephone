@@ -1789,14 +1789,14 @@ public:
 };
 
 
-const int NUM_KEYS = 21;
+const int NUM_KEYS = 22;
 
 static const char *action_name[NUM_KEYS] = {
 	"Move Forward", "Move Backward", "Turn Left", "Turn Right", "Sidestep Left", "Sidestep Right",
 	"Glance Left", "Glance Right", "Look Up", "Look Down", "Recenter View",
 	"Previous Weapon", "Next Weapon", "Trigger", "2nd Trigger",
 	"Turn -> Sidestep", "Run/Swim", "Move -> Look",
-	"Action", "Auto Map", "Aux Trigger"
+	"Action", "Auto Map", "Aux Trigger", "Reload"
 };
 
 static key_binding_map default_key_bindings = {
@@ -1865,6 +1865,7 @@ static key_binding_map default_key_bindings = {
 	{ 20, { SDL_SCANCODE_GRAVE,
 		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_Y)
 	} },
+    { 21, {SDL_SCANCODE_X}},
 };
 
 static const char *shell_action_name[NUMBER_OF_SHELL_KEYS] = {
@@ -2810,7 +2811,8 @@ static void controls_dialog(void *arg)
 	actions_table->dual_add(new w_label("Mouse"), d);
 	actions_table->dual_add(new w_label("Controller"), d);
 	
-	std::vector<int> actions_keys = { 13, 14, 11, 12, -1, 18, -1, 20, 108 };
+    // What keys to display in dialog, use key index number
+	std::vector<int> actions_keys = { 13, 14, 11, 12, -1, 18, -1, 20, 108, 21, };
 	for (auto it = actions_keys.begin(); it != actions_keys.end(); ++it) {
 		if (*it < 0) {
 			actions_table->add_row(new w_spacer(), true);
@@ -3716,7 +3718,7 @@ static const char *binding_action_name[NUM_KEYS] = {
 	"strafe-right", "glance-left", "glance-right", "look-up", "look-down",
 	"look-ahead", "prev-weapon", "next-weapon", "trigger-1", "trigger-2",
 	"strafe", "run", "look", "action", "map",
-	"microphone"
+	"microphone", "reload",
 };
 static const char *binding_shell_action_name[NUMBER_OF_SHELL_KEYS] = {
 	"inventory-left", "inventory-right", "switch-player-view", "volume-up", "volume-down",

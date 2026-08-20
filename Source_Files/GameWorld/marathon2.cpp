@@ -141,7 +141,7 @@ static ModifiableActionQueues* GameQueue = NULL;
 ModifiableActionQueues* GetGameQueue() { return GameQueue; }
 
 // ZZZ: We keep this around for use in prediction (we assume a player keeps on doin' what he's been doin')
-static uint32	sMostRecentFlagsForPlayer[MAXIMUM_NUMBER_OF_PLAYERS];
+static uint64_t	sMostRecentFlagsForPlayer[MAXIMUM_NUMBER_OF_PLAYERS];
 
 /* ---------- private prototypes */
 
@@ -370,7 +370,7 @@ overlay_queue_with_queue_into_queue(ActionQueues* inBaseQueues, ActionQueues* in
         for(int p = 0; p < dynamic_world->player_count; p++)
         {
                 // Trust me, this is right - we dequeue from the Base Queues whether or not they get overridden.
-                uint32 action_flags = inBaseQueues->dequeueActionFlags(p);
+                uint64_t action_flags = inBaseQueues->dequeueActionFlags(p);
                 
                 if(inOverlayQueues != NULL && inOverlayQueues->countActionFlags(p) > 0)
                 {
@@ -580,7 +580,7 @@ update_world()
 			// Enqueue stuff into thePredictiveQueues
 			for(short thePlayerIndex = 0; thePlayerIndex < dynamic_world->player_count; thePlayerIndex++)
 			{
-				uint32 theFlags = (thePlayerIndex == local_player_index) ? NetGetUnconfirmedActionFlag(sPredictedTicks) : sMostRecentFlagsForPlayer[thePlayerIndex];
+				uint64_t theFlags = (thePlayerIndex == local_player_index) ? NetGetUnconfirmedActionFlag(sPredictedTicks) : sMostRecentFlagsForPlayer[thePlayerIndex];
 				thePredictiveQueues.enqueueActionFlags(thePlayerIndex, &theFlags, 1);
 			}
 			

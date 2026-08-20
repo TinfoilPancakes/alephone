@@ -163,6 +163,9 @@ public:
 	
 	virtual AIStream&
 	operator>>(int32 &__value) = 0;
+    
+    virtual AIStream&
+    operator>>(uint64_t &__value) = 0;
 
 	AIStream&
 	read(char *__ptr, uint32 __count);
@@ -217,6 +220,9 @@ public:
 	
 	AIStream&
 	operator>>(int32 &__value);
+    
+    AIStream&
+    operator>>(uint64_t &__value);
 };
 
 class AIStreamLE : public AIStream
@@ -244,6 +250,9 @@ public:
 	
 	AIStream&
 	operator>>(int32 &__value);
+    
+    AIStream&
+    operator>>(uint64_t &__value);
 };
 
 /* Output Streams, serializing */
@@ -282,6 +291,9 @@ public:
 	
 	virtual AOStream&
 	operator<<(int32 __value) = 0;
+    
+    virtual AOStream&
+    operator <<(uint64_t __value) = 0;
 
 
 	AOStream&
@@ -335,6 +347,9 @@ public:
 	
 	AOStream&
 	operator<<(int32 __value);
+    
+    AOStream&
+    operator<<(uint64_t __value);
 };
 
 class AOStreamLE: public AOStream
@@ -362,6 +377,9 @@ public:
 	
 	AOStream&
 	operator<<(int32 __value);
+    
+    AOStream&
+    operator<<(uint64_t __value);
 };
 
 #endif

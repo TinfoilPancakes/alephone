@@ -185,9 +185,10 @@ void initialize_player_physics_variables(
 #endif
 }
 
+//TODO: functions accepting action_flags here may need to be modified.
 void update_player_physics_variables(
 	short player_index,
-	uint32 action_flags,
+	uint64_t action_flags,
 	bool predictive)
 {
 	struct player_data *player= get_player_data(player_index);
@@ -317,7 +318,7 @@ void resync_virtual_aim()
 	vir_aim_delta = {0, 0};
 }
 
-uint32 process_aim_input(uint32 action_flags, fixed_yaw_pitch delta)
+uint64_t process_aim_input(uint64_t action_flags, fixed_yaw_pitch delta)
 {
 	// Classic behavior modes
 	const bool classic_precision = !input_preferences->extra_mouse_precision;

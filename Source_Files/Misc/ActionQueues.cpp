@@ -52,7 +52,7 @@ ActionQueues::ActionQueues(unsigned int inNumPlayers, unsigned int inQueueSize, 
 
     /* allocate space for our action queue headers and the queues themselves */
     mQueueHeaders	= new action_queue[mNumPlayers];
-    mFlagsBuffer	= new uint32[mNumPlayers * mQueueSize];
+    mFlagsBuffer	= new uint64_t[mNumPlayers * mQueueSize];
         
     /* tell the queues where their buffers are */
     for (unsigned i = 0; i < mNumPlayers; ++i)
@@ -100,7 +100,7 @@ ActionQueues::resetQueue(int inPlayerIndex)
 void
 ActionQueues::enqueueActionFlags(
 	int player_index,
-	const uint32 *action_flags,
+	const uint64_t *action_flags,
 	int count)
 {
 	struct player_data *player= get_player_data(player_index);
@@ -124,14 +124,14 @@ ActionQueues::enqueueActionFlags(
 
 // Lifted from player.cpp::dequeue_action_flags()
 /* dequeue’s a single action flag from the given queue (zombies always return zero) */
-uint32
+uint64_t
 ActionQueues::dequeueActionFlags(
 	int player_index)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct action_queue *queue= mQueueHeaders+player_index;
 
-	uint32 action_flags;
+	uint64_t action_flags;
 
         // Non-controllable zombies always just return 0 for their action_flags.
 	if (!mZombiesControllable && PLAYER_IS_ZOMBIE(player))
@@ -156,14 +156,14 @@ ActionQueues::dequeueActionFlags(
 
 
 
-uint32
+uint64_t
 ActionQueues::peekActionFlags(int inPlayerIndex, size_t inElementsFromHead)
 {
 	// ZZZ: much of this body copied from dequeueActionFlags.  Sorry about that...
 	struct player_data *player= get_player_data(inPlayerIndex);
 	struct action_queue *queue= mQueueHeaders+inPlayerIndex;
 
-	uint32 action_flags;
+	uint64_t action_flags;
 
         // Non-controllable zombies always just return 0 for their action_flags.
 	if (!mZombiesControllable && PLAYER_IS_ZOMBIE(player))
@@ -224,7 +224,7 @@ ActionQueues::setZombiesControllable(bool inZombiesControllable) {
         mZombiesControllable = inZombiesControllable;
 }
 
-void ModifiableActionQueues::modifyActionFlags(int inPlayerIndex, uint32 inFlags, uint32 inFlagsMask)
+void ModifiableActionQueues::modifyActionFlags(int inPlayerIndex, uint64_t inFlags, uint64_t inFlagsMask)
 {
 	if (!countActionFlags(inPlayerIndex))
 	{
@@ -233,7 +233,7 @@ void ModifiableActionQueues::modifyActionFlags(int inPlayerIndex, uint32 inFlags
 	}
 
 	action_queue *queue = mQueueHeaders + inPlayerIndex;
-	if (queue->buffer[queue->read_index] != 0xffffffff)
+	if (queue->buffer[queue->read_index] != 0xffffffffffffffff)
 		queue->buffer[queue->read_index] = (queue->buffer[queue->read_index] & ~inFlagsMask) | (inFlags & inFlagsMask);
 
 }

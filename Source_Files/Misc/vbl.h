@@ -56,7 +56,7 @@ void initialize_keyboard_controller(void);
 /* true if it found it, false otherwise. always fills in vrefnum and dirid*/
 bool get_recording_filedesc(FileSpecifier& File);
 void move_replay(void);
-uint32 parse_keymap(void);
+uint64_t parse_keymap(void);
 
 bool setup_replay_from_random_resource(uint32 map_checksum);
 
@@ -68,7 +68,7 @@ struct recorded_flag {
 
 void open_stream_file(void);
 void write_flags(struct recorded_flag *buffer, int32 count);
-static void debug_stream_of_flags(uint32 action_flag, short player_index);
+static void debug_stream_of_flags(uint64_t action_flag, short player_index);
 static void close_stream_file(void);
 #endif
 

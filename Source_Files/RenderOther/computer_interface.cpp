@@ -326,7 +326,7 @@ static void draw_line(char *base_text, short start_index, short end_index, Rect 
 	short line_number);
 static bool calculate_line(char *base_text, short width, short start_index, 
 	short text_end_index, short *end_index);
-static void handle_reading_terminal_keys(short player_index, int32 action_flags);
+static void handle_reading_terminal_keys(short player_index, uint64_t action_flags);
 static void calculate_bounds_for_object(short flags, Rect *bounds, Rect *source);
 static void display_picture(short picture_id, Rect *frame, short flags);
 static void display_shape(short shape, Rect* frame);
@@ -625,7 +625,7 @@ void update_player_for_terminal_mode(
 
 void update_player_keys_for_terminal(
 	short player_index,
-	uint32 action_flags)
+	uint64_t action_flags)
 {
 	struct player_terminal_data *terminal= get_player_terminal_data(player_index);
 	if (!terminal) return;
@@ -1894,7 +1894,7 @@ static bool find_checkpoint_location(
 
 static void handle_reading_terminal_keys(
 	short player_index,
-	int32 action_flags)
+	uint64_t action_flags)
 {
 	struct player_terminal_data *terminal= get_player_terminal_data(player_index);
 	terminal_text_t *terminal_text= get_indexed_terminal_data(terminal->terminal_id);

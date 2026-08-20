@@ -57,7 +57,7 @@ enum {
 	kStarPacketHeaderSize = 4, // 2 bytes for packet magic, 2 for CRC
 };
 
-typedef uint32 action_flags_t;	// (should be elsewhere)
+typedef uint64_t action_flags_t;	// (should be elsewhere) // change to 64_bit at some point
 typedef ConcreteTickBasedCircularQueue<action_flags_t> TickBasedActionQueue;
 typedef WritableTickBasedCircularQueue<action_flags_t> WritableTickBasedActionQueue;
 

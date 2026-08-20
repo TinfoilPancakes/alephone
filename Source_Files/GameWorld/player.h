@@ -68,6 +68,7 @@ May 20, 2002 (Woody Zenfell):
 #include "map.h"
 // ZZZ addition: same deal
 #include "weapons.h"
+#include <cstdint>
 
 /* ---------- constants */
 
@@ -212,15 +213,16 @@ enum /* action flag bit offsets */
 	_toggle_map_bit,
 	_microphone_button_bit,
 	_swim_bit,
+    _reload_bit,
 	
-	NUMBER_OF_ACTION_FLAG_BITS /* should be <=32 */
+	NUMBER_OF_ACTION_FLAG_BITS /* should be <=32 ?? Trying to Change this... */
 };
 
 #define _override_absolute_yaw (_turning_left|_turning_right|_looking_left|_looking_right)
 #define _override_absolute_pitch (_looking_up|_looking_down|_looking_center)
 #define _override_absolute_position (_moving_forward|_moving_backward)
 
-enum /* action_flags */
+enum action_flags_enum : uint64_t /* action_flags */
 {
 	_absolute_yaw_mode= 1<<_absolute_yaw_mode_bit,
 	_turning_left= 1<<_turning_left_bit,
@@ -249,7 +251,8 @@ enum /* action_flags */
 	_cycle_weapons_backward= 1<<_cycle_weapons_backward_bit,
 	_toggle_map= 1<<_toggle_map_bit,
 	_microphone_button= 1<<_microphone_button_bit,
-	_swim= 1<<_swim_bit,
+	_swim= 1u<<_swim_bit,
+    _reload= 1ull<<_reload_bit,
 
 	_turning= _turning_left|_turning_right,
 	_looking= _looking_left|_looking_right,
@@ -536,7 +539,7 @@ bool try_and_subtract_player_item(short player_index, short item_type);
 /* ---------- prototypes/PHYSICS.C */
 
 void initialize_player_physics_variables(short player_index);
-void update_player_physics_variables(short player_index, uint32 action_flags, bool predictive);
+void update_player_physics_variables(short player_index, uint64_t action_flags, bool predictive);
 
 void adjust_player_for_polygon_height_change(short monster_index, short polygon_index, world_distance new_floor_height,
 	world_distance new_ceiling_height);
@@ -556,7 +559,7 @@ fixed_yaw_pitch virtual_aim_delta();
 void resync_virtual_aim();
 
 // Update the virtual aim and return action flags updated with yaw/pitch deltas (if appropriate)
-uint32 process_aim_input(uint32 action_flags, fixed_yaw_pitch delta);
+uint64_t process_aim_input(uint64_t action_flags, fixed_yaw_pitch delta);
 
 
 // LP: to pack and unpack this data;
