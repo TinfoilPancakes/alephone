@@ -107,7 +107,7 @@ Feb 20, 2002 (Woody Zenfell):
 #define END_OF_RECORDING_INDICATOR  (RECORD_CHUNK_SIZE+1)
 #define MAXIMUM_TIME_DIFFERENCE     15 // allowed between heartbeat_count and dynamic_world->tick_count
 #define MAXIMUM_NET_QUEUE_SIZE       8
-#define DISK_CACHE_SIZE             ((sizeof(int16)+sizeof(uint32))*100)
+#define DISK_CACHE_SIZE             ((sizeof(int16)+sizeof(uint64_t))*100)
 #define MAXIMUM_REPLAY_SPEED         5
 #define MINIMUM_REPLAY_SPEED        -5
 
