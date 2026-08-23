@@ -112,6 +112,7 @@ static struct key_definition standard_key_definitions[]=
     
     /* reload button */
     {SDL_SCANCODE_X, _reload},
+	{SDL_SCANCODE_C, _reload_secondary},
 };
 
 #endif

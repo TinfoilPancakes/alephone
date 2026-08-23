@@ -214,6 +214,7 @@ enum /* action flag bit offsets */
 	_microphone_button_bit,
 	_swim_bit,
     _reload_bit,
+	_reload_secondary_bit,
 	
 	NUMBER_OF_ACTION_FLAG_BITS /* should be <=32 ?? Trying to Change this... */
 };
@@ -253,6 +254,7 @@ enum action_flags_enum : uint64_t /* action_flags */
 	_microphone_button= 1<<_microphone_button_bit,
 	_swim= 1u<<_swim_bit,
     _reload= 1ull<<_reload_bit,
+	_reload_secondary= 1ull<<_reload_secondary_bit,
 
 	_turning= _turning_left|_turning_right,
 	_looking= _looking_left|_looking_right,
